@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "219149546495",
+    "project_id": "suji-technical-exercise-f1f77",
+    "storage_bucket": "suji-technical-exercise-f1f77.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:219149546495:android:7e720dd62e4e4e95a1adca",
+        "android_client_info": {
+          "package_name": "com.data"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "219149546495-dg1qt9n11opf89d74t8g9ht8p7gf98c1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAqmhbVzTKQvRlHHxrs60KTRBA40RVezUk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "219149546495-dg1qt9n11opf89d74t8g9ht8p7gf98c1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
