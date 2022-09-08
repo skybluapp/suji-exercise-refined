@@ -2,18 +2,15 @@ package com.suji.userinterface.components.lists
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.SemanticsProperties.Heading
-import androidx.compose.ui.unit.dp
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshState
-import com.suji.userinterface.components.animations.animatedShimmer
-import com.suji.userinterface.components.cards.AthleteCardPlaceholder
+import com.suji.userinterface.theme.dimensions
 
 /**
- * A list of content that can request additional content when the list has been scrolled to the bottom
+ * A generic list of content that can request additional content when the list has been scrolled to the bottom
+ * and refreshes when swiped down from the top
  * @param Heading composable content to display at the top of the scrollable ist
  * @param list A list of content to populate the list
  * @param endReached True if the end of the content has been reached
@@ -38,7 +35,7 @@ fun <E> PagingList(
     SwipeRefresh(
         state = swipeState,
         onRefresh = { refresh() }) {
-        LazyColumn(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        LazyColumn(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(dimensions.small)) {
             item {
                 Heading()
             }
@@ -59,7 +56,7 @@ fun <E> PagingList(
                         horizontalArrangement = Arrangement.Center,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(dimensions.small)) {
                             placeholderContent()
                         }
                     }

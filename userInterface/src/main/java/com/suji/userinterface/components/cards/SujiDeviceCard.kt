@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.MaterialTheme.typography
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,102 +21,115 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
+
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
-import com.suji.model.*
-import com.suji.model.providers.SujiDeviceProvider
+
+import com.suji.domain.model.ConnectionStatus
+import com.suji.domain.model.InflationStatus
+import com.suji.domain.model.SujiDevice
+import com.suji.userinterface.providers.SujiDeviceProvider
 import com.suji.sujitechnicalexercise.ui.theme.TextGrey
 import com.suji.userinterface.R
 import com.suji.userinterface.components.animations.LoopingAnimation
-import timber.log.Timber
 
+/**
+ * Displays a card containing the status of a Suji Device
+ * @param sujiDevice The Suji device to display
+ * @param onClick An action to do when the card is clicked
+ */
 @OptIn(ExperimentalAnimationGraphicsApi::class)
 @Composable
 fun SujiDeviceCard(
     @PreviewParameter(SujiDeviceProvider::class)
     sujiDevice: SujiDevice,
     onClick: (String) -> Unit = {},
-    athlete: Athlete?
-
 ) {
+    SelectorCard(
+        onClick = {onClick(sujiDevice.name)}
+    ) {
+        SujiDeviceComp(sujiDevice)
+    }
+}
+
+@OptIn(ExperimentalAnimationGraphicsApi::class)
+@Composable
+fun SujiDeviceComp(
+    sujiDevice: SujiDevice?,
+    onTextClicked : () -> Unit = {}
+){
 
     val color = MaterialTheme.colors
-    val typography = MaterialTheme.typography
 
+    //Select color of Suji logo based upon connection status
     val logoColor: Color by animateColorAsState(
-        when (sujiDevice.connectionStatus) {
+        when (sujiDevice?.connectionStatus) {
             ConnectionStatus.CONNECTED -> color.primary
             ConnectionStatus.DISCONNECTED -> color.secondary
             ConnectionStatus.CONNECTING -> color.secondary
             ConnectionStatus.DISCONNECTING -> TextGrey
+            else -> TextGrey
         }
     )
 
-    val text = when (sujiDevice.connectionStatus) {
-        ConnectionStatus.CONNECTING -> "Connecting..."
-        ConnectionStatus.DISCONNECTED -> sujiDevice.name
-        ConnectionStatus.CONNECTED -> sujiDevice.name
-        ConnectionStatus.DISCONNECTING -> "Disconnecting..."
-    }
-
-    val anim = when (sujiDevice.connectionStatus) {
-        ConnectionStatus.CONNECTING -> true
-        ConnectionStatus.DISCONNECTED -> false
-        ConnectionStatus.CONNECTED -> false
-        ConnectionStatus.DISCONNECTING -> false
-    }
-
+    //Select color of Suji logo based upon connection status
     val textColor: Color by animateColorAsState(
-        when (sujiDevice.connectionStatus) {
+        when (sujiDevice?.connectionStatus) {
             ConnectionStatus.CONNECTED -> color.onSurface
             ConnectionStatus.DISCONNECTED -> color.onSurface
             ConnectionStatus.CONNECTING -> color.onSurface
             ConnectionStatus.DISCONNECTING -> color.onSurface
+            else -> color.primary
         }
     )
 
+    //Select text based upon connection status
+    val text = when (sujiDevice?.connectionStatus) {
+        ConnectionStatus.CONNECTING -> "Connecting..."
+        ConnectionStatus.DISCONNECTED -> sujiDevice.name
+        ConnectionStatus.CONNECTED -> sujiDevice.name
+        ConnectionStatus.DISCONNECTING -> "Disconnecting..."
+        else -> {"Select Device"}
+    }
 
-    
+    //Select battery indicator colour based on battery percentage
+    val batteryColor: Color by animateColorAsState(
+        when(sujiDevice?.batteryPercentage){
+            in 0..20 -> Color.Red
+            in 20..50 -> Color(0xFFFFA500)
+            in 50..100 -> Color.Green
+            else -> Color.Transparent
+        }
+    )
 
-Timber.d("Recomposed!")
+    //If the device is connecting, animate the logo
 
-
-    Card(
-        modifier = Modifier
-            .clip(RoundedCornerShape(10.dp))
-            .background(color.surface)
-            .padding(
-                horizontal = 0.dp,
-                vertical = 4.dp
+        if(sujiDevice?.connectionStatus == ConnectionStatus.CONNECTING){
+            LoopingAnimation(
+                animatedVector = AnimatedImageVector.animatedVectorResource(R.drawable.red_suji_animated),
+                size = 100.dp,
+                isRunning = true,
+                tint = logoColor,
             )
-
-            .noRippleClickable {
-
-            },
-        elevation = 0.dp,
-    ) {
-        Box(
-            modifier = Modifier
-                .size(150.dp)
-                .noRippleClickable {
-                    onClick(sujiDevice.name)
-                },
-            contentAlignment = Alignment.TopCenter,
-
-            ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                if(sujiDevice.connectionStatus == ConnectionStatus.CONNECTING){
+        } else {
+            when(sujiDevice?.inflationStatus){
+                InflationStatus.INFLATING -> {
                     LoopingAnimation(
-                        animatedVector = AnimatedImageVector.animatedVectorResource(R.drawable.red_suji_animated),
+                        animatedVector = AnimatedImageVector.animatedVectorResource(R.drawable.suji_inflating_animated),
                         size = 100.dp,
                         isRunning = true,
                         tint = logoColor,
                     )
-                } else {
+                }
+                InflationStatus.DEFLATING -> {
+                    LoopingAnimation(
+                        animatedVector = AnimatedImageVector.animatedVectorResource(R.drawable.suji_deflating_animated),
+                        size = 100.dp,
+                        isRunning = true,
+                        tint = logoColor,
+                    )
+                }
+                else -> {
                     LoopingAnimation(
                         animatedVector = AnimatedImageVector.animatedVectorResource(R.drawable.red_suji_animated),
                         size = 100.dp,
@@ -123,43 +137,30 @@ Timber.d("Recomposed!")
                         tint = logoColor,
                     )
                 }
-
-                Text(
-                    text = text,
-                    color = textColor,
-                    fontWeight = FontWeight.Bold,
-                    fontStyle = typography.h1.fontStyle,
-                    fontSize = typography.h6.fontSize,
-                )
-                if (sujiDevice.connectionStatus == ConnectionStatus.CONNECTED) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.battery_full),
-                        contentDescription = "",
-                        modifier = Modifier
-                            .rotate(90f)
-                            .size(18.dp),
-                        tint = Color.Green
-                    )
-                }
-            }
-
-            if (sujiDevice.connectionStatus == ConnectionStatus.CONNECTED) {
-                if (athlete != null) {
-                    AsyncImage(
-                        model =athlete.institutionLogoUrl ,
-                        contentDescription = "athlete",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .size(36.dp)
-                            .clip(CircleShape),
-                    )
-                }
             }
 
         }
 
-    }
+
+    //Show Text
+    Text(
+        style = typography.h6,
+        color = textColor,
+        text = text,
+        modifier = Modifier.noRippleClickable {
+            onTextClicked()
+        }
+    )
+
+    //Battery Icon
+    Icon(
+        painter = painterResource(id = R.drawable.battery_full),
+        contentDescription = "Battery Indicator",
+        modifier = Modifier
+            .rotate(90f)
+            .size(18.dp),
+        tint = batteryColor
+    )
 }
 
 

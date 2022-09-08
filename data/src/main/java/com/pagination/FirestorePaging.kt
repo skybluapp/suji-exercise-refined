@@ -1,7 +1,5 @@
 package com.pagination
 
-import com.skyblu.data.pagination.PagingInterface
-
 /**
  * Manages paging for paged document snapshots from Firestore
  * @param initialKey The initial document

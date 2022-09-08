@@ -1,59 +1,33 @@
 package com.suji.sujitechnicalexercise.dependencyInjection
 
-import android.content.Context
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.preferencesDataStore
-import com.connectedSujiDevices.ConnectedSujiDevices
-import com.connectedSujiDevices.ConnectedSujiDevicesInterface
 import com.firestore.FireStoreRead
 import com.firestore.ReadServerInterface
-import com.google.firebase.FirebaseApp
 import com.repository.Repository
 import com.suji.domain.AthletesPaging
 import com.suji.domain.AthletesPagingInterface
+import com.suji.domain.connectedSujiDevices.ConnectedSujiDevicesBimap
+import com.suji.domain.connectedSujiDevices.SujiDeviceManager
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
 /**
- * Dependancy Injection Module
  * Provides instances of interfaces used throughout the app
  */
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
-
-
-    @Singleton
-    @Provides
-    fun provideTestString(): String {
-        return "This is a test string"
-    }
-
-
-    @Singleton
-    @Provides
-    fun provideApplicationContext(@ApplicationContext applicationContext: Context): Context {
-        return applicationContext
-    }
-
-
-
     @Singleton
     @Provides
     fun provideRepository(
         readServerInterface: ReadServerInterface,
-        connectedSujiDevicesInterface: ConnectedSujiDevicesInterface
     ): Repository {
         return Repository(
             readServerInterface = readServerInterface,
-            connectedSujiDevicesInterface = connectedSujiDevicesInterface
         )
     }
 
@@ -65,16 +39,15 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideConnectedSuji(): ConnectedSujiDevices {
-        return ConnectedSujiDevices()
+    fun provideAthletesPaging(repository: Repository, connectedSujiDevices: ConnectedSujiDevicesBimap): AthletesPaging {
+        return AthletesPaging(repository = repository, connectedSujiDevices = connectedSujiDevices)
     }
 
     @Singleton
     @Provides
-    fun provideAthletesPaging(repository: Repository): AthletesPaging {
-        return AthletesPaging(repository = repository)
+    fun provideConnectedSujis() : ConnectedSujiDevicesBimap{
+        return ConnectedSujiDevicesBimap()
     }
-
 }
 
 /**
@@ -90,7 +63,7 @@ abstract class AppBindings {
 
     @Singleton
     @Binds
-    abstract fun connectedSujiInterface(connectedSujiDevices: ConnectedSujiDevices): ConnectedSujiDevicesInterface
+    abstract fun connectedSujiInterface(connectedSujiDevices: ConnectedSujiDevicesBimap) : SujiDeviceManager
 
     @Singleton
     @Binds

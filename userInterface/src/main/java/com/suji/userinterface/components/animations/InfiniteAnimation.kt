@@ -51,6 +51,6 @@ fun LoopingAnimation(
         null,
         Modifier
             .size(size),
-        tint = tint
+        tint = tint,
     )
 }

@@ -12,6 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.suji.userinterface.screens.DashboardScreen
+import com.suji.userinterface.screens.ProfileScreen
 import com.suji.userinterface.screens.SplashScreen
 import com.suji.userinterface.viewModels.DashboardViewModel
 
@@ -47,6 +48,13 @@ fun Navigation(
                 DashboardScreen(
                     navController = navHostController,
                     viewModel = dashboardViewModel,
+                )
+            }
+
+            //Dashboard Destination
+            composable("profile") {
+                ProfileScreen(
+                    navController = navHostController,
                 )
             }
         }

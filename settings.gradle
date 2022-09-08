@@ -15,6 +15,5 @@ dependencyResolutionManagement {
 rootProject.name = "SujiTechnicalExercise"
 include ':app'
 include ':userInterface'
-include ':model'
 include ':data'
 include ':domain'

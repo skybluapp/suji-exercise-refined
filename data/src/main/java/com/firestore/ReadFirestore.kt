@@ -29,9 +29,9 @@ class FireStoreRead : ReadServerInterface {
         val firestoreCollection = firestore.collection(collection)
 
         val firestoreReference = if (page == null) {
-            firestoreCollection
+            firestoreCollection.orderBy("name")
         } else {
-            firestoreCollection.startAfter(page)
+            firestoreCollection.orderBy("name").startAfter(page)
         }
 
         firestoreReference
