@@ -148,7 +148,8 @@ fun AthleteStatus(
                 text = athlete.name,
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1,
-                style = typography.h6
+                style = typography.h6,
+                color = colors.onSurface
             )
 
         }

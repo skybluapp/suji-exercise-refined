@@ -33,12 +33,14 @@ fun SelectorCard(
 
     Card(
         modifier = Modifier
-            .clip(shape.medium)
-            .background(color.surface)
+
+
             .padding(
                 horizontal = dimensions.none,
                 vertical = dimensions.xSmall
             )
+            .clip(shape.medium)
+            .background(color.surface)
             .noRippleClickable {
 
             },

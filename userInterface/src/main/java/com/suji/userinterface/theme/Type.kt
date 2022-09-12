@@ -24,13 +24,11 @@ val Typography = Typography(
         fontFamily = FontFamily.SansSerif,
         fontWeight = FontWeight.SemiBold,
         fontSize = 18.sp,
-        color = Color.Black
     ),
 
     body2 = TextStyle(
         fontFamily = FontFamily.SansSerif,
         fontSize = 18.sp,
-        color = Color.Black
     )
 
 /* Other default text styles to override

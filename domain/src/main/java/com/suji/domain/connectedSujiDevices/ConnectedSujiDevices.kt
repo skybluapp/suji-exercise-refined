@@ -34,6 +34,7 @@ interface SujiDeviceManager {
     suspend fun connectSujiToAthlete(athleteUID: String, deviceName: String): Boolean
     fun clearAthletes()
     val reassignEvent : SharedFlow<Pair<Athlete, Athlete>>
+    val updateSujiEvent : SharedFlow<SujiDevice>
     suspend fun inflateToPercentage(deviceName : String, percentage : Int)
     suspend fun disconnectSujiFromAthlete(deviceName : String, athleteUID: String) : Boolean
     fun caliabrateToLimb(deviceName: String, limb: Limb)
@@ -55,11 +56,16 @@ class ConnectedSujiDevicesBimap : SujiDeviceManager {
     private val _unassignedSujiDevices : MutableStateFlow<List<SujiDevice>> = MutableStateFlow(startingArray.toList())
     override val unassignedSujiDevices: StateFlow<List<SujiDevice>> = _unassignedSujiDevices
 
-    private val _reassignEvent = MutableSharedFlow<Pair<Athlete, Athlete>>() // private mutable shared flow
-    override val reassignEvent = _reassignEvent.asSharedFlow() // publicly exposed as read-only shared flow
+    private val _reassignEvent = MutableSharedFlow<Pair<Athlete, Athlete>>()
+    override val reassignEvent = _reassignEvent.asSharedFlow()
+
+    private val _updateSujiEvent = MutableSharedFlow<SujiDevice>()
+    override val updateSujiEvent = _updateSujiEvent.asSharedFlow()
+
+
 
     suspend fun reassignEvent(new : Athlete, current : Athlete) {
-        _reassignEvent.emit(Pair(new, current)) // suspends until all subscribers receive it
+        _reassignEvent.emit(Pair(new, current))
     }
 
     override fun addAthlete(athlete: Athlete) {
@@ -132,16 +138,19 @@ class ConnectedSujiDevicesBimap : SujiDeviceManager {
             while(pressure != targetPressure){
                 if(pressure < targetPressure){
                     pressure ++
-                    replaceSujiDevice(deviceName, device.copy(inflationStatus = InflationStatus.INFLATING, pressure = pressure))
+//                    replaceSujiDevice(deviceName, device.copy(inflationStatus = InflationStatus.INFLATING, pressure = pressure))
+                    _updateSujiEvent.emit(device.copy(inflationStatus = InflationStatus.INFLATING, pressure = pressure))
                     delay(5)
                 }
 
                 if(pressure > targetPressure){
                     pressure --
-                    replaceSujiDevice(deviceName, device.copy(inflationStatus = InflationStatus.DEFLATING, pressure = pressure))
+                    _updateSujiEvent.emit(device.copy(inflationStatus = InflationStatus.DEFLATING, pressure = pressure))
+//                    replaceSujiDevice(deviceName, device.copy(inflationStatus = InflationStatus.DEFLATING, pressure = pressure))
                     delay(5)
                 }
             }
+            _updateSujiEvent.emit(device.copy(inflationStatus = InflationStatus.INFLATED, pressure = pressure))
             replaceSujiDevice(deviceName, device.copy(inflationStatus = InflationStatus.INFLATED, pressure = pressure) )
 
         }
@@ -183,6 +192,7 @@ class ConnectedSujiDevicesBimap : SujiDeviceManager {
 
             if(!isSujiDeviceConnected(deviceName) && !isAthleteConnected(athleteUID)){
                 replaceSujiDevice(deviceName, getSujiDevice(deviceName)!!.copy(connectionStatus = ConnectionStatus.CONNECTING))
+                val device = getSujiDevice(deviceName)!!
                 val mapCopy = _athleteDeviceMap.value.toMutableMap()
                 mapCopy.put(getAthlete(athleteUID), getSujiDevice(deviceName))
                 _athleteDeviceMap.value =  HashBiMap.create<Athlete, SujiDevice>(mapCopy)
@@ -192,7 +202,9 @@ class ConnectedSujiDevicesBimap : SujiDeviceManager {
                 var listCopy2 = unassignedAthletes.value.toMutableList()
                 listCopy2.remove(getAthlete(athleteUID))
                 _unassignedAthletes.value = listCopy2
+                _updateSujiEvent.emit(device.copy(connectionStatus = ConnectionStatus.CONNECTING))
                 delay(4000)
+                _updateSujiEvent.emit(device.copy(connectionStatus = ConnectionStatus.CONNECTED, lopLeg = lopLeg, lopArm = lopArm))
                 replaceSujiDevice(deviceName, getSujiDevice(deviceName)!!.copy(connectionStatus = ConnectionStatus.CONNECTED, lopArm = lopArm, lopLeg = lopLeg))
                 return true
             } else {

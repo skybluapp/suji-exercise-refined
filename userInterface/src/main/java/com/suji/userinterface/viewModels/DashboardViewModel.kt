@@ -36,12 +36,14 @@ import javax.inject.Inject
  */
 data class DashboardState(
     var athleteDeviceMap: StateFlow<BiMap<Athlete, SujiDevice>> = MutableStateFlow(HashBiMap.create()),
+    var athleteDeviceMap2: StateFlow<BiMap<Athlete, MutableState<SujiDevice>>> = MutableStateFlow(HashBiMap.create()),
     var deviceAthleteMap: MutableState<BiMap<SujiDevice, Athlete>> = mutableStateOf(HashBiMap.create()),
     var unassignedAthletes: StateFlow<List<Athlete>> = MutableStateFlow(listOf()),
     var unassignedSujiDevices: StateFlow<List<SujiDevice>> = MutableStateFlow(listOf()),
     var selectedAthlete: MutableState<Athlete?> = mutableStateOf(null),
     var selectedSujiDevice: MutableState<SujiDevice?> = mutableStateOf(null),
     var reassignEvent: SharedFlow<Pair<Athlete, Athlete>> = MutableSharedFlow<Pair<Athlete, Athlete>>().asSharedFlow(),
+    var updateSujiEvent: SharedFlow<SujiDevice> = MutableSharedFlow<SujiDevice>().asSharedFlow(),
     var isLoading: StateFlow<Boolean> = MutableStateFlow(false),
     var endReached: StateFlow<Boolean> = MutableStateFlow(false),
     var isRefreshing: StateFlow<Boolean> = MutableStateFlow(false),
@@ -77,6 +79,7 @@ class DashboardViewModel @Inject constructor(
         state.isLoading = paging.isLoading
         state.endReached = paging.endReached
         state.reassignEvent = connectedSujiDevices.reassignEvent
+        state.updateSujiEvent = connectedSujiDevices.updateSujiEvent
         loadNextAthletePage()
         viewModelScope.launch {
             launch {
@@ -87,8 +90,20 @@ class DashboardViewModel @Inject constructor(
                 }
             }
             launch {
+                state.updateSujiEvent.collect {
+                    val inverse =  state.athleteDeviceMap2.value.inverse()
+                    val p = inverse.keys.find { mutableState -> mutableState.value.name == it.name  }
+                    val athlete = inverse[p]
+                    state.athleteDeviceMap2.value[athlete]?.value  = it
+                }
+            }
+            launch {
                 connectedSujiDevices.athleteDeviceMap.collect { athleteDeviceMap ->
                     state.deviceAthleteMap.value = athleteDeviceMap.inverse()
+                    state.athleteDeviceMap2.value.clear()
+                    athleteDeviceMap.forEach{ athlete, sujiDevice ->
+                        state.athleteDeviceMap2.value.put(athlete, mutableStateOf(sujiDevice))
+                    }
                 }
             }
 

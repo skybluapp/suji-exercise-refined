@@ -14,10 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.suji.domain.model.Athlete
-import com.suji.domain.model.DashboardBottomDrawers
-import com.suji.domain.model.InflationStatus
-import com.suji.domain.model.Limb
+import com.suji.domain.model.*
 import com.suji.userinterface.R
 import com.suji.userinterface.components.bottomDrawers.FilterSelector
 import com.suji.userinterface.components.cards.AthleteCard
@@ -53,7 +50,7 @@ fun DashboardScreen(
     val color = MaterialTheme.colors
     val state = viewModel.state
 
-    val athleteDeviceMapState = state.athleteDeviceMap.collectAsState()
+    val athleteDeviceMapState = state.athleteDeviceMap2.collectAsState()
     val unassignedSujiDeviceState = state.unassignedSujiDevices.collectAsState()
 
 
@@ -72,8 +69,13 @@ fun DashboardScreen(
     val bottomSheet = @Composable {
         when (state.bottomDrawer.value) {
             DashboardBottomDrawers.SELECT_SUJI -> {
+                val mappedDevices : MutableList<SujiDevice> = mutableListOf()
+                athleteDeviceMapState.value.values.forEach { device ->
+                    mappedDevices.add(device.value)
+
+                }
                 SujiDeviceSelector(
-                    sujiDeviceList = (unassignedSujiDeviceState.value + athleteDeviceMapState.value.values).sortedBy { device -> device.name },
+                    sujiDeviceList = (unassignedSujiDeviceState.value + mappedDevices).sortedBy { device -> device.name },
                     selectSujiDevice = { device ->
                         state.bottomDrawer.value = DashboardBottomDrawers.NONE
                         viewModel.connectAthleteToSujiDevice(device.name, state.selectedAthlete.value!!.uid)
@@ -106,7 +108,7 @@ fun DashboardScreen(
                         )
                         state.bottomDrawer.value = DashboardBottomDrawers.NONE
                     },
-                    enabled = athleteDeviceMapState.value[oldAthlete]!!.inflationStatus != InflationStatus.INFLATING
+                    enabled = athleteDeviceMapState.value[oldAthlete]!!.value.inflationStatus != InflationStatus.INFLATING
                 )
             }
 
@@ -115,23 +117,23 @@ fun DashboardScreen(
                 val athlete = state.selectedAthlete.value!!
                 val device = athleteDeviceMapState.value[athlete]!!
                 SujiControlPanel(
-                    onStopAndDeflate = { viewModel.inflateSujiDeviceToPercentage(device.name, 0 ) },
+                    onStopAndDeflate = { viewModel.inflateSujiDeviceToPercentage(device.value.name, 0 ) },
                     onSelectLimb = {
-                        state.selectedSujiDevice.value = device
+                        state.selectedSujiDevice.value = device.value
                         state.bottomDrawer.value = DashboardBottomDrawers.SELECT_LIMB
                     },
                     onInflateToPercentage = { percentage ->
                         viewModel.inflateSujiDeviceToPercentage(
-                            device.name,
+                            device.value.name,
                             percentage
                         )
                     },
-                    sujiDevice = device,
+                    sujiDevice = device.value,
                     athlete = athlete,
                     onDisconnect = {
                         state.bottomDrawer.value = DashboardBottomDrawers.NONE
                         viewModel.disconnect(
-                            device.name,
+                            device.value.name,
                             athleteUID = athlete.uid
                         )
                     }
@@ -184,7 +186,7 @@ fun DashboardScreen(
                     refresh = { viewModel.refresh() },
                     swipeState = state.swipeRefreshState.value,
                     content = { athlete ->
-                        val device = athleteDeviceMapState.value[athlete]
+                        val device = athleteDeviceMapState.value[athlete]?.value
                         if (!state.isRefreshing.collectAsState().value) {
                             AthleteCard(
                                 athlete = athlete,
@@ -233,7 +235,7 @@ fun DashboardScreen(
     val topBar = @Composable {
         Box(Modifier.height(50.dp)) {
             TopAppBar(
-                title = { Text(text = "AT Dashboard") },
+                title = { Text(text = "AT Dashboard", color = color.onSurface) },
                 backgroundColor = color.surface,
                 contentColor = MaterialTheme.colors.onBackground,
                 elevation = dimensions.elevation,

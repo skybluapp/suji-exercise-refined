@@ -5,18 +5,20 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import com.suji.sujitechnicalexercise.ui.theme.*
 
 private val DarkColorPalette = darkColors(
     primary = SujiRed,
     primaryVariant = Purple700,
-    secondary = SujiAlt
+    secondary = SujiRed.copy(alpha = 0.5f),
+    background = Color.Black,
 )
 
 private val LightColorPalette = lightColors(
     primary = SujiRed,
     primaryVariant = Purple700,
-    secondary = SujiAlt,
+    secondary = SujiRed.copy(alpha = 0.5f),
     background = BackgroundGrey,
 
     /* Other default colors to override
