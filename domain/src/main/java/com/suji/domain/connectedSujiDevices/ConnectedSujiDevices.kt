@@ -64,7 +64,7 @@ class ConnectedSujiDevicesBimap : SujiDeviceManager {
 
 
 
-    suspend fun reassignEvent(new : Athlete, current : Athlete) {
+    private suspend fun reassignEvent(new : Athlete, current : Athlete) {
         _reassignEvent.emit(Pair(new, current))
     }
 
@@ -99,11 +99,11 @@ class ConnectedSujiDevicesBimap : SujiDeviceManager {
         return getAllAthletes().find { athlete -> athlete.uid == athleteUID}
     }
 
-    fun isSujiDeviceConnected(deviceName: String) : Boolean{
+    private fun isSujiDeviceConnected(deviceName: String) : Boolean{
         return athleteDeviceMap.value.values.find { device -> device.name == deviceName } != null
     }
 
-    fun isAthleteConnected(athleteUID: String) : Boolean{
+    private fun isAthleteConnected(athleteUID: String) : Boolean{
         return athleteDeviceMap.value.keys.find { athlete -> athlete.name == athleteUID } != null
     }
 

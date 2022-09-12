@@ -36,7 +36,7 @@ import javax.inject.Inject
  */
 data class DashboardState(
     var athleteDeviceMap: StateFlow<BiMap<Athlete, SujiDevice>> = MutableStateFlow(HashBiMap.create()),
-    var athleteDeviceMap2: StateFlow<BiMap<Athlete, MutableState<SujiDevice>>> = MutableStateFlow(HashBiMap.create()),
+    var athleteDeviceMapRefined: StateFlow<BiMap<Athlete, MutableState<SujiDevice>>> = MutableStateFlow(HashBiMap.create()),
     var deviceAthleteMap: MutableState<BiMap<SujiDevice, Athlete>> = mutableStateOf(HashBiMap.create()),
     var unassignedAthletes: StateFlow<List<Athlete>> = MutableStateFlow(listOf()),
     var unassignedSujiDevices: StateFlow<List<SujiDevice>> = MutableStateFlow(listOf()),
@@ -91,18 +91,18 @@ class DashboardViewModel @Inject constructor(
             }
             launch {
                 state.updateSujiEvent.collect {
-                    val inverse =  state.athleteDeviceMap2.value.inverse()
+                    val inverse =  state.athleteDeviceMapRefined.value.inverse()
                     val p = inverse.keys.find { mutableState -> mutableState.value.name == it.name  }
                     val athlete = inverse[p]
-                    state.athleteDeviceMap2.value[athlete]?.value  = it
+                    state.athleteDeviceMapRefined.value[athlete]?.value  = it
                 }
             }
             launch {
                 connectedSujiDevices.athleteDeviceMap.collect { athleteDeviceMap ->
                     state.deviceAthleteMap.value = athleteDeviceMap.inverse()
-                    state.athleteDeviceMap2.value.clear()
+                    state.athleteDeviceMapRefined.value.clear()
                     athleteDeviceMap.forEach{ athlete, sujiDevice ->
-                        state.athleteDeviceMap2.value.put(athlete, mutableStateOf(sujiDevice))
+                        state.athleteDeviceMapRefined.value.put(athlete, mutableStateOf(sujiDevice))
                     }
                 }
             }

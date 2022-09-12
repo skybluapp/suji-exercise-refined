@@ -28,7 +28,6 @@ import com.suji.userinterface.components.bottomDrawers.SujiDeviceSelector
 import com.suji.userinterface.theme.dimensions
 import com.suji.userinterface.viewModels.DashboardViewModel
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 /**
  * A screen to manage and control Suji devices for multiple athletes
@@ -50,7 +49,7 @@ fun DashboardScreen(
     val color = MaterialTheme.colors
     val state = viewModel.state
 
-    val athleteDeviceMapState = state.athleteDeviceMap2.collectAsState()
+    val athleteDeviceMapState = state.athleteDeviceMapRefined.collectAsState()
     val unassignedSujiDeviceState = state.unassignedSujiDevices.collectAsState()
 
 

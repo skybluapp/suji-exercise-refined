@@ -45,11 +45,14 @@ fun FilterSelector(
         ) {
             Text(
                 "Show Only Connected Athletes",
-                style = typography.body2
+                style = typography.body2,
+                color = color.onBackground
             )
             Switch(
                 filtered,
-                onCheckedChange = { onToggleFilterConnected(!filtered) })
+                onCheckedChange = { onToggleFilterConnected(!filtered) },
+                colors = SwitchDefaults.colors(checkedThumbColor = color.primary, checkedTrackColor = color.secondary)
+            )
         }
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -63,6 +66,7 @@ fun FilterSelector(
         ) {
             Text(
                 "Filter By Calibrated Limb",
+                color = color.onBackground,
                 style = typography.body2
             )
             Switch(
